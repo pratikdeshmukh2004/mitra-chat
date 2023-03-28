@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAddressCard, faArrowRight, faArrowRightLong, faEnvelope, faEye, faEyeSlash, faPersonWalkingArrowRight, faUserPlus } from '@fortawesome/free-solid-svg-icons';
 import Typing from "react-typing-effect";
@@ -9,12 +9,97 @@ function RegisterPage() {
 
   const navigate = useNavigate()
   const [passType, setPassType] = useState("password")
-
+  const [errors, setErrors] = useState({})
+  const nameRef = useRef(null)
+  const emailRef = useRef(null)
+  const passwordRef = useRef(null)
   useEffect(() => {
     if (authService.getCurrentUser()) {
       navigate("/home")
     }
   }, [])
+
+  useEffect(() => {
+    console.log(errors);
+    if (errors.first_name) {
+      nameRef.current.classList.add('ring-1')
+      nameRef.current.classList.add('ring-rose-500')
+
+      nameRef.current.classList.remove('ring-green-500')
+      nameRef.current.classList.remove('focus-within:ring-1')
+
+    } else {
+      nameRef.current.classList.remove('ring-rose-500')
+      nameRef.current.classList.remove('ring-1')
+
+      nameRef.current.classList.add('ring-green-500')
+      nameRef.current.classList.add('focus-within:ring-1')
+    }
+    if (errors.email) {
+      emailRef.current.classList.add('ring-1')
+      emailRef.current.classList.add('ring-rose-500')
+
+      emailRef.current.classList.remove('ring-green-500')
+      emailRef.current.classList.remove('focus-within:ring-1')
+
+    } else {
+      emailRef.current.classList.remove('ring-rose-500')
+      emailRef.current.classList.remove('ring-1')
+
+      emailRef.current.classList.add('ring-green-500')
+      emailRef.current.classList.add('focus-within:ring-1')
+    }
+    if (errors.password) {
+      passwordRef.current.classList.add('ring-rose-500')
+      passwordRef.current.classList.add('ring-1')
+
+      passwordRef.current.classList.remove('ring-green-500')
+      passwordRef.current.classList.remove('focus-within:ring-1')
+
+    } else {
+      passwordRef.current.classList.remove('ring-rose-500')
+      passwordRef.current.classList.remove('ring-1')
+
+      passwordRef.current.classList.add('ring-green-500')
+      passwordRef.current.classList.add('focus-within:ring-1')
+    }
+  }, [errors])
+
+  const errorHandler = (e) => {
+    if (e.target.id == "email") {
+      const email = e.target.value;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setErrors({email: "Invalid Email Address." })
+      } else {
+        setErrors({email: "" })
+      }
+    }else{
+      setErrors({ ...errors, password: "" ,first_name:""})
+    }
+  }
+  const onSignup = async (e) => {
+    e.preventDefault()
+
+    const first_name = e.target[0].value;
+    const last_name = e.target[1].value;  
+    const email = e.target[2].value;
+    const password = e.target[3].value;
+
+    if (!first_name) return setErrors({ ...errors, first_name: "Can't be blank." })
+    if (!email) return setErrors({ ...errors, email: "Can't be blank." })
+    if (!password) return setErrors({ ...errors, password: "Can't be blank." })
+    const result = await authService.register(`${first_name} ${last_name}`,email,password)
+    if (!result.status) {
+      if (result.message.includes("exists")) {
+        setErrors({ ...errors, email: result.message })
+      } else {
+        setErrors({email: result.message, password: result.message})
+      }
+    }else{
+      navigate("/login")
+    }
+  }
 
   return (
     <div className="min-h-screen bg-cover bg-center relative" style={{ backgroundImage: `url('/images/login_cover.jpg')` }}>
@@ -24,17 +109,20 @@ function RegisterPage() {
             <span className='w-8 h-8 rounded-full bg-green-500'></span>
             <span class="text-green-500 font-bold text-lg ml-3">Mitra Chat</span>
           </a>
-          <form autoComplete='off' aria-autocomplete='off' className='ml-10'>
+          <form autoComplete='off' onChange={errorHandler} onSubmit={onSignup}  aria-autocomplete='off' className='ml-10'>
             <p class="text-gray-400 font-bold text-xs mt-20 uppercase">Start for free</p>
             <h2 className='text-white font-bold text-3xl mt-2'>
               <Typing typingDelay={50} speed={100} hideCursor={false} cursorClassName={"text-green-500"} eraseSpeed={200} text={"Create new account."} /></h2>
             <div className='flex gap-0 lg:gap-5 flex-col lg:flex-row'>
-              <div class="bg-gray-800 focus-within:ring-1 ring-green-400 rounded-xl px-6 pt-1 pb-2 mt-10 lg:w-44 w-72">
+              <div>
+              <div ref={nameRef} class="bg-gray-800 focus-within:ring-1 ring-green-400 rounded-xl px-6 pt-1 pb-2 mt-10 lg:w-44 w-72">
                 <label class="mr-4 text-gray-400 text-xs" for="username">First Name</label>
                 <span class="flex">
-                  <input class="bg-gray-800 rounded-lg w-full outline-none font-bold text-sm text-white capitalize" type="text" />
+                  <input id='name' class="bg-gray-800 rounded-lg w-full outline-none font-bold text-sm text-white capitalize" type="text" />
                   <FontAwesomeIcon className='ml-2 text-lg -mt-2 text-gray-400' icon={faAddressCard} />
                 </span>
+              </div>
+
               </div>
               <div class="bg-gray-800 focus-within:ring-1 ring-green-400  rounded-xl px-6 pt-1 pb-2 mt-5 lg:mt-10 lg:w-48 w-72">
                 <label class="mr-4 text-gray-400 text-xs " for="username">Last Name</label>
@@ -43,23 +131,26 @@ function RegisterPage() {
                   <FontAwesomeIcon className='ml-2 text-lg -mt-2 text-gray-400' icon={faAddressCard} />
                 </span>
               </div>
+            {/* <p className='text-rose-500 font-bold text-xs px-2 rounded-b-lg  w-64 lg:w-80 mt-1'>{errors.first_name} </p> */}
             </div>
-            <div class="bg-gray-800 focus-within:ring-1   ring-green-400  rounded-xl px-6 pb-2 pt-1 mt-5 w-72 lg:w-96">
+            <div ref={emailRef}  class="bg-gray-800 focus-within:ring-1   ring-green-400  rounded-xl px-6 pb-2 pt-1 mt-5 w-72 lg:w-96">
               <label class="mr-4 text-gray-400 text-xs " for="username">Email</label>
               <span class="flex">
-                <input class="bg-gray-800 rounded-lg w-full outline-none font-bold text-sm text-white lowercase" type="text" />
+                <input id='email' class="bg-gray-800 rounded-lg w-full outline-none font-bold text-sm text-white lowercase" type="text" />
                 <FontAwesomeIcon className='ml-2 text-lg -mt-2 text-gray-400' icon={faEnvelope} />
               </span>
             </div>
-            <div class="bg-gray-800 focus-within:ring-1   ring-green-400  rounded-xl px-6 pb-2 pt-1 mt-5 w-72 lg:w-96">
+            <p className='text-rose-500 font-bold text-xs px-2 rounded-b-lg  w-64 lg:w-80 mt-1'>{errors.email} </p>
+            <div ref={passwordRef} class="bg-gray-800 focus-within:ring-1   ring-green-400  rounded-xl px-6 pb-2 pt-1 mt-5 w-72 lg:w-96">
               <label class="mr-4 text-gray-400 text-xs " for="username">Password</label>
               <span class="flex">
-                <input type={passType} class="bg-gray-800 rounded-lg w-full outline-none font-bold text-sm text-white" />
+                <input id='password' type={passType} class="bg-gray-800 rounded-lg w-full outline-none font-bold text-sm text-white" />
                 <FontAwesomeIcon onClick={() => setPassType(passType == "password" ? "text" : "password")} className='ml-2 text-lg -mt-2 text-green-400 cursor-pointer' icon={passType == "text" ? faEyeSlash : faEye} />
               </span>
             </div>
+            <p className='text-rose-500 font-bold text-xs px-2 rounded-b-lg  w-64 lg:w-80 mt-1'>{errors.password} </p>
             <div className='mt-10 gap-4'>
-              <button type='button' className='text-green-500 outline-none focus-within:bg-green-500 focus-within:text-black bg-gray-700 lg:px-28 px-16 text-lg hover:bg-green-500 hover:text-black  font-bold py-3 rounded-2xl'>Create account <FontAwesomeIcon className='ml-2' icon={faArrowRightLong} /></button>
+              <button type='submit' className='text-green-500 outline-none focus-within:bg-green-500 focus-within:text-black bg-gray-700 lg:px-28 px-16 text-lg hover:bg-green-500 hover:text-black  font-bold py-3 rounded-2xl'>Create account <FontAwesomeIcon className='ml-2' icon={faArrowRightLong} /></button>
               <p className='text-sm text-gray-500 mt-2 ml-1'>Already have an account? <Link to={'/login'} className='text-green-500 hover:text-green-800 font-bold '>Access your account</Link></p>
             </div>
           </form>

@@ -73,6 +73,9 @@ function LoginPage() {
 
   const onLogin = async (e) => {
     e.preventDefault()
+    if (errors.email || errors.password){
+      return;
+    }
     const email = e.target[0].value;
     const password = e.target[1].value;
     if (!email) return setErrors({ ...errors, email: "Can't be blank." })
