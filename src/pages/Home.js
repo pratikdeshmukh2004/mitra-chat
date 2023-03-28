@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import io from 'socket.io-client';
 import { redirect, useNavigate } from 'react-router-dom';
 import authService from '../services/authService'
 
@@ -9,78 +10,57 @@ const HomePage = () => {
             navigate("/login")
         }
     }, [])
+    const [messages, setMessages] = useState([{ user: "Admin", "message": "Welcome to Room" }])
+    const socket = io('http://localhost:5050');
+    const searchParams = new URLSearchParams(window.location.search);
+    const room1 = searchParams.get('room1');
+    const room2 = searchParams.get('room2');
+    socket.emit('join_room', {room1, room2})
+    socket.on("msgs", (data)=>{
+        console.log(data, 'data...');
+        setMessages([...messages, data])
+    })
+
+    useEffect(() => {
+        console.log('====================================');
+        console.log('connection changed...', socket.id);
+        console.log('====================================');
+        
+    }, [socket.connected])
+
+    const onEnter = (e)=>{
+        if (e.keyCode != 13){
+            return ;
+        }
+        console.log(e.target.id);
+        socket.emit('msg', {user: socket.id, message: e.target.value, room: e.target.id})
+        e.target.value = "";
+    }
+
     return (
-        <div style={{ padding: "20px" }}>
-
-            <svg style={{ height: "30px", width: "30px" }} viewbox="0 0 300 300">
-                <path>
-                    <animate
-                        attributeName="d"
-                        dur="3000ms"
-                        repeatCount="indefinite"
-                        keyTimes="0;
-                 .0625;
-                 .3125;
-                 .395833333;
-                 .645833333;
-                 .833333333;
-                 1"
-                        calcMode="spline"
-                        keySplines="0,0,1,1;
-                   .42,0,1,1;
-                   0,0,.58,1;
-                   .42,0,.58,1;
-                   .42,0,.58,1;
-                   .42,0,.58,1"
-
-                        values="M 0,0 C 50,0 50,0 100,0 100,50 100,50 100,100
-               50,100 50,100 0,100 0,50 0,50 0,0 Z;
-                     
-               M 0,0 C 50,0 50,0 100,0 100,50 100,50 100,100
-               50,100 50,100 0,100 0,50 0,50 0,0 Z; 
-
-               M 50,0 C 75,50 75,50 100,100 50,100 50,100 0,100
-               12.5,75 12.5,75 25,50 37.5,25 37.5,25 50,0 Z;
-
-               M 50,0 C 75,50 75,50 100,100 50,100 50,100 0,100
-               12.5,75 12.5,75 25,50 37.5,25 37.5,25 50,0 Z;
-
-               M 100,50 C 100,77.6 77.6,100 50,100 22.4,100 0,77.6
-               0,50 0,22.4 22.4,0 50,0 77.6,0 100,22.4 100,50 Z;
-                     
-               M 100,50 C 100,77.6 77.6,100 50,100 22.4,100 0,77.6 
-               0,50 0,22.4 22.4,0, 50,0 77.6,0 100,22.4 100,50 Z;
-                     
-               M 100,100 C 50,100 50,100 0,100 0,50 0,50 0,0
-               50,0 50,0 100,0 100,50 100,50 100,100 Z;"/>
-                    <animate
-                        attributeName="fill"
-                        dur="3000ms"
-                        repeatCount="indefinite"
-                        keyTimes="0;
-                 .0625;
-                 .3125;
-                 .395833333;
-                 .645833333;
-                 .833333333;
-                 1"
-                        calcMode="spline"
-                        keySplines="0,0,1,1;
-                   .42,0,1,1;
-                   0,0,.58,1;
-                   .42,0,.58,1;
-                   .42,0,.58,1;
-                   .42,0,.58,1"
-                        values="#FFA400;
-               #FFA400;
-               #FF4E42;
-               #FF4E42;
-               #0CCE6B;
-               #0CCE6B;
-               #FFA400;"/>
-                </path>
-            </svg>
-
+        <div className='flex justify-between px-20 gap-2 mt-20 '>
+            <div className='px-20 py-10 border-2 border-green-400'>
+                <h2 className='text-lg text-center font-bold'>{room1}</h2>
+                <ul>
+                    {messages.filter((item)=>item.room == room1).map((item) => {
+                        return (
+                            <li>{item.user}: {item.message}</li>
+                        )
+                    })}
+                    <input onKeyDown={onEnter} id={room1} className='outline-none mt-20 border-b border-green-300' placeholder='Type message...' />
+                </ul>
+            </div>
+            <div className='px-20 py-10 border-2 border-green-400'>
+                <h2 className='text-lg text-center font-bold'>{room2}</h2>
+                <ul>
+                    {messages.filter((item)=>item.room == room2).map((item) => {
+                        return (
+                            <li>{item.user}: {item.message}</li>
+                        )
+                    })}
+                    <input onKeyDown={onEnter} id={room2} className='outline-none mt-20 border-b border-green-300' placeholder='Type message...' />
+                </ul>
+            </div>
         </div>
     );
 }
