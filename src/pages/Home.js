@@ -6,10 +6,14 @@ import authService from '../services/authService'
 const HomePage = () => {
     const navigate = useNavigate()
     useEffect(() => {
-        if (!authService.getCurrentUser()) {
+        setTimeout(async() => {
+          const user = await authService.getCurrentUser();
+          console.log(user, 'user...');
+          if (!user) {
             navigate("/login")
-        }
-    }, [])
+          }
+        }, 0);
+      }, [])
     const [messages, setMessages] = useState([{ user: "Admin", "message": "Welcome to Room" }])
     const socket = io('http://localhost:5050');
     const searchParams = new URLSearchParams(window.location.search);

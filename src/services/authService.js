@@ -1,61 +1,53 @@
-// authService.js
-
-// Import any necessary libraries or modules
 import axios from 'axios';
+import { reactLocalStorage } from 'reactjs-localstorage';
 
-// Define the base URL for the authentication API
-const API_BASE_URL = 'https://example.com/api/auth';
+const API_URL = process.env.REACT_APP_API_URL // your API URL here
 
-// Define any necessary functions or variables
-const authService = {
-    // Function for logging in a user
-    login: async (username, password) => {
-        try {
-            const response = await axios.post(`${API_BASE_URL}/login`, {
-                username,
-                password,
-            });
-            // Handle successful login
-            return response.data;
-        } catch (error) {
-            // Handle failed login
-            throw error;
+// create axios instance
+const axiosInstance = axios.create({
+    baseURL: API_URL,
+});
+
+// set JWT token as default Authorization header
+axiosInstance.interceptors.request.use((config) => {
+    const token = reactLocalStorage.getObject('token');
+    if (token?.data) {
+        config.headers.Authorization = token.data.accessToken
+    }
+    return config;
+});
+
+// authentication API functions
+const clientService = {
+    login: async (email, password) => {
+        const response = await axiosInstance.post('/auth/login', { email, password });
+        if (response.status){
+            reactLocalStorage.setObject("token", response)
         }
+        return response.data;
     },
-
-    // Function for registering a user
-    register: async (username, password, email) => {
-        try {
-            const response = await axios.post(`${API_BASE_URL}/register`, {
-                username,
-                password,
-                email,
-            });
-            // Handle successful registration
-            return response.data;
-        } catch (error) {
-            // Handle failed registration
-            throw error;
-        }
+    register: async (name, email, password) => {
+        const response = await axiosInstance.post('/auth/register', { name, email, password });
+        return response.data;
     },
-
-    // Function for logging out a user
     logout: async () => {
-        try {
-            const response = await axios.post(`${API_BASE_URL}/logout`);
-            // Handle successful logout
-            return response.data;
-        } catch (error) {
-            // Handle failed logout
-            throw error;
+        const response = await axiosInstance.post('/auth/logout');
+        return response.data;
+    },
+    getCurrentUser: async () => {
+        try{
+        const tokenData = reactLocalStorage.getObject("token")
+        if (tokenData?.data){
+            const response = await axiosInstance.post('/auth/me');
+            if (response?.data){
+                return response
+            }
         }
-    },
-
-    // Function for getting the current user
-    getCurrentUser: () => {
         return null
-    },
+    }catch{
+        return null
+    }
+    }
 };
 
-// Export the authService object
-export default authService;
+export default clientService;
