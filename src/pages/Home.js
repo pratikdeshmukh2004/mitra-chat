@@ -2,70 +2,60 @@ import React, { useEffect, useState } from 'react';
 import io from 'socket.io-client';
 import { redirect, useNavigate } from 'react-router-dom';
 import authService from '../services/authService'
+import Sidebar from '../components/Chat/Sidebar';
+import Messages from '../components/Chat/Messages';
+
+var socket;
 
 const HomePage = () => {
     const navigate = useNavigate()
-    const [loaded, setloaded] = useState(false)
-    useEffect(() => {
-        setTimeout(async() => {
-          const user = await authService.getCurrentUser();
-          console.log(user, 'user...');
-          setloaded(true)
-          if (!user) {
+    const [messages, setMessages] = useState([])
+    const [user_id, setUserId] = useState("")
+
+    const connectSocket = async () => {
+        const user = await authService.getCurrentUser();
+        if (!user) {
             navigate("/login")
-          }
-        }, 0);
-      }, [])
-    const [messages, setMessages] = useState([{ user: "Admin", "message": "Welcome to Room" }])
-    const socket = io(process.env.REACT_APP_SOCKET_URL);
-    const searchParams = new URLSearchParams(window.location.search);
-    const room1 = searchParams.get('room1');
-    const room2 = searchParams.get('room2');
-    socket.emit('join_room', {room1, room2})
-    socket.on("msgs", (data)=>{
-        console.log(data, 'data...');
-        setMessages([...messages, data])
-    })
+        }
+        console.log('loading...');
+        socket = io(process.env.REACT_APP_SOCKET_URL);
+        setUserId(socket.id)
+        socket.emit('join_room', { room1: "room1", room2: "room2" })
+        socket.on("msgs", (data) => {
+            var mn = messages
+            mn.push(data)
+            setMessages([...mn])
+
+
+        })
+    }
 
     useEffect(() => {
-        console.log('====================================');
-        console.log('connection changed...', socket.id);
-        console.log('====================================');
-        
-    }, [socket.connected])
+        connectSocket()
+    }, [])
 
-    const onEnter = (e)=>{
-        if (e.keyCode != 13){
-            return ;
+    useEffect(() => {
+        setUserId(socket?.id)
+        console.log(socket?.id, 'socketid');
+    }, [socket?.id])
+
+
+    const onEnter = (e) => {
+        if (e.keyCode != 13) {
+            return;
         }
         console.log(e.target.id);
-        socket.emit('msg', {user: socket.id, message: e.target.value, room: e.target.id})
+        socket.emit('msg', { user: { name: socket.id, id: user_id }, text: e.target.value, room: 'room1' })
         e.target.value = "";
     }
-    if (!loaded) return;
+
     return (
-        <div className='flex justify-between px-20 gap-2 mt-20 '>
-            <div className='px-20 py-10 border-2 border-green-400'>
-                <h2 className='text-lg text-center font-bold'>{room1}</h2>
-                <ul>
-                    {messages.filter((item)=>item.room == room1).map((item) => {
-                        return (
-                            <li>{item.user}: {item.message}</li>
-                        )
-                    })}
-                    <input onKeyDown={onEnter} id={room1} className='outline-none mt-20 border-b border-green-300' placeholder='Type message...' />
-                </ul>
-            </div>
-            <div className='px-20 py-10 border-2 border-green-400'>
-                <h2 className='text-lg text-center font-bold'>{room2}</h2>
-                <ul>
-                    {messages.filter((item)=>item.room == room2).map((item) => {
-                        return (
-                            <li>{item.user}: {item.message}</li>
-                        )
-                    })}
-                    <input onKeyDown={onEnter} id={room2} className='outline-none mt-20 border-b border-green-300' placeholder='Type message...' />
-                </ul>
+        <div className="min-h-screen bg-cover bg-center relative" style={{ backgroundImage: `url('/images/login_cover.jpg')` }}>
+            <div className="absolute top-0 left-0 h-full w-full bg-gradient-to-bl lg:bg-gradient-to-bt from-transparent via-gray-900 to-gray-900" style={{ backdropFilter: 'blur(0px)' }}>
+                <div className='w-full flex lg:w-[80%] mx-auto lg:mt-[2%] mt-0 lg:h-[90%] h-full bg-gray-800'>
+                    <Sidebar />
+                    <Messages messages={messages} handleMessage={onEnter} user_id={user_id} />
+                </div>
             </div>
         </div>
     );

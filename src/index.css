@@ -16,3 +16,23 @@ select:-webkit-autofill:focus {
   -webkit-box-shadow: 0 0 0px 1000px transperent inset;
   transition: background-color 5000s ease-in-out 0s;
 }
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 5px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  display: none;
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #4f4e4e; 
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: white; 
+}
