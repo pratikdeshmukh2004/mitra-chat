@@ -17,7 +17,7 @@ const HomePage = () => {
         }, 0);
       }, [])
     const [messages, setMessages] = useState([{ user: "Admin", "message": "Welcome to Room" }])
-    const socket = io('http://localhost:5050');
+    const socket = io(process.env.REACT_APP_SOCKET_URL);
     const searchParams = new URLSearchParams(window.location.search);
     const room1 = searchParams.get('room1');
     const room2 = searchParams.get('room2');
