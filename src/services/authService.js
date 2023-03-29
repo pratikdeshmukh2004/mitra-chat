@@ -21,7 +21,7 @@ axiosInstance.interceptors.request.use((config) => {
 const clientService = {
     login: async (email, password) => {
         const response = await axiosInstance.post('/auth/login', { email, password });
-        if (response.status){
+        if (response.data.status) {
             reactLocalStorage.setObject("token", response)
         }
         return response.data;
@@ -35,18 +35,15 @@ const clientService = {
         return response.data;
     },
     getCurrentUser: async () => {
-        try{
-        const tokenData = reactLocalStorage.getObject("token")
-        if (tokenData?.data){
-            const response = await axiosInstance.post('/auth/me');
-            if (response?.data){
-                return response
+        try {
+            const tokenData = reactLocalStorage.getObject("token")
+            if (tokenData?.data) {
+                return tokenData
             }
+            return null
+        } catch {
+            return null
         }
-        return null
-    }catch{
-        return null
-    }
     }
 };
 

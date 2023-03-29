@@ -1,59 +1,51 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowRightLong, faEnvelope, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { faArrowRightLong, faEnvelope, faEye, faEyeSlash, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import Typing from "react-typing-effect";
 import { Link, useNavigate } from 'react-router-dom';
 import authService from '../services/authService'
 
-function LoginPage() {
+
+function LoginPage(props) {
 
   const navigate = useNavigate()
   const [passType, setPassType] = useState("password")
   const [errors, setErrors] = useState({})
+  const [isloading, setisLoading] = useState(false)
 
   const emailRef = useRef(null)
   const passwordRef = useRef(null)
 
   useEffect(() => {
-    setTimeout(async() => {
+    setTimeout(async () => {
       const user = await authService.getCurrentUser();
-      console.log(user, 'user...');
       if (user) {
         navigate("/home")
       }
     }, 0);
   }, [])
 
+
+  const updateInputField = (ref, error) => {
+    if (error) {
+      ref.current?.classList.add('ring-rose-500')
+      ref.current?.classList.add('ring-1')
+
+      ref.current?.classList.remove('ring-green-500')
+      ref.current?.classList.remove('focus-within:ring-1')
+
+    } else {
+      ref.current?.classList.remove('ring-rose-500')
+      ref.current?.classList.remove('ring-1')
+
+      ref.current?.classList.add('ring-green-500')
+      ref.current?.classList.add('focus-within:ring-1')
+    }
+  }
+
   useEffect(() => {
-    console.log(errors);
-    if (errors.email) {
-      emailRef.current.classList.add('ring-rose-500')
-      emailRef.current.classList.add('ring-1')
-
-      emailRef.current.classList.remove('ring-green-500')
-      emailRef.current.classList.remove('focus-within:ring-1')
-
-    } else {
-      emailRef.current.classList.remove('ring-rose-500')
-      emailRef.current.classList.remove('ring-1')
-
-      emailRef.current.classList.add('ring-green-500')
-      emailRef.current.classList.add('focus-within:ring-1')
-    }
-    if (errors.password) {
-      passwordRef.current.classList.add('ring-rose-500')
-      passwordRef.current.classList.add('ring-1')
-
-      passwordRef.current.classList.remove('ring-green-500')
-      passwordRef.current.classList.remove('focus-within:ring-1')
-
-    } else {
-      passwordRef.current.classList.remove('ring-rose-500')
-      passwordRef.current.classList.remove('ring-1')
-
-      passwordRef.current.classList.add('ring-green-500')
-      passwordRef.current.classList.add('focus-within:ring-1')
-    }
+    updateInputField(emailRef, errors.email)
+    updateInputField(passwordRef, errors.password)
   }, [errors])
 
   const errorHandler = (e) => {
@@ -61,33 +53,35 @@ function LoginPage() {
       const email = e.target.value;
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
-        setErrors({email: "Invalid Email Address." })
+        setErrors({ email: "Invalid Email Address." })
       } else {
-        setErrors({email: "" })
+        setErrors({ email: "" })
       }
-    }else{
-      setErrors({ ...errors, password: "" })
-      
+    } else {
+      setErrors({ })
+
     }
   }
 
   const onLogin = async (e) => {
     e.preventDefault()
-    if (errors.email || errors.password){
+    if (errors.email || errors.password) {
       return;
     }
     const email = e.target[0].value;
     const password = e.target[1].value;
     if (!email) return setErrors({ ...errors, email: "Can't be blank." })
     if (!password) return setErrors({ ...errors, password: "Can't be blank." })
+    setisLoading(true)
     const result = await authService.login(email, password)
+    setisLoading(false)
     if (!result.status) {
       if (result.message.includes("exists")) {
         setErrors({ ...errors, email: result.message })
       } else {
-        setErrors({email: result.message, password: result.message})
+        setErrors({ email: result.message, password: result.message })
       }
-    }else{
+    } else {
       navigate("/")
     }
   }
@@ -121,7 +115,10 @@ function LoginPage() {
               </span>
             </div>
             <p className='text-rose-500 font-bold text-xs px-2 rounded-b-lg  w-64 lg:w-80 mt-1'>{errors.password} </p>
-            <button type='submit' className='text-green-500 mt-10 outline-none focus-within:bg-green-500 focus-within:text-black bg-gray-700 lg:px-28 px-16 text-lg hover:bg-green-500 hover:text-black  font-bold py-3 rounded-2xl'>Access account <FontAwesomeIcon className='ml-2' icon={faArrowRightLong} /></button>
+            <button type='submit' className='text-green-500 mt-10 outline-none focus-within:bg-green-500 focus-within:text-black bg-gray-700 lg:px-28 px-16 text-lg hover:bg-green-500 hover:text-black  font-bold py-3 rounded-2xl'>Access account
+              {!isloading?<FontAwesomeIcon className='ml-2' icon={faArrowRightLong} />:
+              <FontAwesomeIcon className='ml-2 animate-spin' icon={faSpinner} />}
+            </button>
             <p className='text-sm text-gray-500 mt-2 ml-1 '>Don't have an account? <Link to={'/register'} className='text-green-500 hover:text-green-800 font-bold '>Create an account</Link></p>
           </form>
         </div>

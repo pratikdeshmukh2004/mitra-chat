@@ -5,10 +5,12 @@ import authService from '../services/authService'
 
 const HomePage = () => {
     const navigate = useNavigate()
+    const [loaded, setloaded] = useState(false)
     useEffect(() => {
         setTimeout(async() => {
           const user = await authService.getCurrentUser();
           console.log(user, 'user...');
+          setloaded(true)
           if (!user) {
             navigate("/login")
           }
@@ -40,7 +42,7 @@ const HomePage = () => {
         socket.emit('msg', {user: socket.id, message: e.target.value, room: e.target.id})
         e.target.value = "";
     }
-
+    if (!loaded) return;
     return (
         <div className='flex justify-between px-20 gap-2 mt-20 '>
             <div className='px-20 py-10 border-2 border-green-400'>
