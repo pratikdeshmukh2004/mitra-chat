@@ -2,30 +2,47 @@ import logo from './logo.svg';
 import './App.css';
 import RegisterPage from './pages/Signup';
 import LoginPage from './pages/Login';
-import HomePage from './pages/Home';
+import ChatPage from './pages/Chat';
 
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
+import SocketProvider, { SocketContext } from './contexs/socketContext';
+import UserProvider, { UserContext } from './contexs/authContext';
+import { useContext } from 'react';
 
 
-const routes = createBrowserRouter([
+const authRoutes = createBrowserRouter([
   {
-    path: "/login",
-    element: <LoginPage/> 
-  },
-  {
-    path: "/register",
-    element: <RegisterPage/> 
+    path: "/",
+    element: <ChatPage />
   },
   {
     path: "*",
-    element: <HomePage/> 
-  },
+    element: <Navigate to="/" />
+  }
+
 ])
 
+const openRoutes = createBrowserRouter([
+  {
+    path: "/login",
+    element: <LoginPage />
+  },
+  {
+    path: "/register",
+    element: <RegisterPage />
+  },
+  {
+    path: "*",
+    element: <Navigate to="/login" />
+  }
+])
 
 function App() {
+  const {user} = useContext(UserContext)
   return (
-    <RouterProvider router={routes}/>
+      <SocketProvider>
+        <RouterProvider router={Object.keys(user).length ? authRoutes : openRoutes} />
+      </SocketProvider>
   );
 }
 

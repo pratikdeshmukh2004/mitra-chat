@@ -22,7 +22,7 @@ const clientService = {
     login: async (email, password) => {
         const response = await axiosInstance.post('/auth/login', { email, password });
         if (response.data.status) {
-            reactLocalStorage.setObject("token", response)
+            reactLocalStorage.setObject("token", response.data.user)
         }
         return response.data;
     },

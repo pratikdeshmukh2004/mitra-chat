@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAddressCard, faArrowRightLong, faEnvelope, faEye, faEyeSlash, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import Typing from "react-typing-effect";
 import { Link, useNavigate } from 'react-router-dom';
-import authService from '../services/authService';
+import authService from '../services/userService';
 
 function RegisterPage() {
 

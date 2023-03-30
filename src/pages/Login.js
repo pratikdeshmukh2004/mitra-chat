@@ -1,29 +1,21 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRightLong, faEnvelope, faEye, faEyeSlash, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import Typing from "react-typing-effect";
 import { Link, useNavigate } from 'react-router-dom';
-import authService from '../services/authService'
+import authService from '../services/userService'
+import { reactLocalStorage } from 'reactjs-localstorage';
+import { UserContext } from '../contexs/authContext';
 
 
 function LoginPage(props) {
 
-  const navigate = useNavigate()
   const [passType, setPassType] = useState("password")
   const [errors, setErrors] = useState({})
   const [isloading, setisLoading] = useState(false)
-
+  const { setUser } = useContext(UserContext)
   const emailRef = useRef(null)
   const passwordRef = useRef(null)
-
-  useEffect(() => {
-    setTimeout(async () => {
-      const user = await authService.getCurrentUser();
-      if (user) {
-        navigate("/home")
-      }
-    }, 0);
-  }, [])
 
 
   const updateInputField = (ref, error) => {
@@ -57,9 +49,6 @@ function LoginPage(props) {
       } else {
         setErrors({ email: "" })
       }
-    } else {
-      setErrors({ })
-
     }
   }
 
@@ -82,7 +71,8 @@ function LoginPage(props) {
         setErrors({ email: result.message, password: result.message })
       }
     } else {
-      navigate("/")
+      console.log(result, 'dat....');
+      setUser(result.user)
     }
   }
 
@@ -116,8 +106,8 @@ function LoginPage(props) {
             </div>
             <p className='text-rose-500 font-bold text-xs px-2 rounded-b-lg  w-64 lg:w-80 mt-1'>{errors.password} </p>
             <button type='submit' className='text-green-500 mt-10 outline-none focus-within:bg-green-500 focus-within:text-black bg-gray-700 lg:px-28 px-16 text-lg hover:bg-green-500 hover:text-black  font-bold py-3 rounded-2xl'>Access account
-              {!isloading?<FontAwesomeIcon className='ml-2' icon={faArrowRightLong} />:
-              <FontAwesomeIcon className='ml-2 animate-spin' icon={faSpinner} />}
+              {!isloading ? <FontAwesomeIcon className='ml-2' icon={faArrowRightLong} /> :
+                <FontAwesomeIcon className='ml-2 animate-spin' icon={faSpinner} />}
             </button>
             <p className='text-sm text-gray-500 mt-2 ml-1 '>Don't have an account? <Link to={'/register'} className='text-green-500 hover:text-green-800 font-bold '>Create an account</Link></p>
           </form>

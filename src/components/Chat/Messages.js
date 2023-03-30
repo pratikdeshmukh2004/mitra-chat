@@ -1,9 +1,35 @@
-import React, { useState } from 'react';
-import { faArrowLeftLong, faArrowRightLong, faEllipsisVertical, faFaceGrinHearts, faFaceSmile, faMagnifyingGlass, faMicrophone, faPaperclip, faThumbTack, faThumbtack, faWifi } from '@fortawesome/free-solid-svg-icons';
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import { faArrowLeftLong, faArrowRightLong, faClose, faEllipsisVertical, faFaceGrinHearts, faFaceSmile, faMagnifyingGlass, faMicrophone, faPaperclip, faThumbTack, faThumbtack, faWifi } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { SocketContext } from '../../contexs/socketContext';
+import { UserContext } from '../../contexs/authContext';
 
-function Messages({ active = true, messages=[], handleMessage, user_id }) {
-    if (!active) return (
+function Messages({ setActiveRoom,activeRoom, messages = [], user_id }) {
+
+  const {user, setUser} = useContext(UserContext)
+    
+    const messagesRef = useRef(null)
+
+    const socket = useContext(SocketContext)
+
+
+    const handleMessage = (e) => {
+        if (e.keyCode != 13) {
+            return;
+        }
+        console.log(e.target.id);
+        socket.emit('msg', { user: { name: user.name, id: socket.id }, text: e.target.value, room: activeRoom.id })
+        e.target.value = "";
+    }   
+
+    useEffect(() => {
+        if (messagesRef.current){
+            messagesRef.current.scrollIntoView({ behavior: 'smooth' });
+            messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+        }
+    }, [messages])
+
+    if (!activeRoom) return (
         <div className="flex flex-col items-center h-full w-[70%] bg-gray-900 border-r border-gray-700">
             <div className='flex my-auto'>
                 <img className='w-16' src='/logo.png' />
@@ -18,21 +44,21 @@ function Messages({ active = true, messages=[], handleMessage, user_id }) {
     )
     return (
 
-        <div className="flex flex-col h-full w-[70%] bg-gray-900 border-r border-gray-700">
+        <div className="flex flex-col h-full w-full lg:w-[70%] bg-gray-900 border-r border-gray-700">
             <div className="flex items-center py-3 border-b border-gray-700 bg-gray-800 px-5 text-white text-xl font-semibold">
-                <img src='https://i.pravatar.cc/300' className='w-8 rounded-full h-8' />
+                <img src='https://www.kindpng.com/picc/m/22-223910_circle-user-png-icon-transparent-png.png' className='w-8 rounded-full h-8' />
                 <div className='ml-3'>
-                    <h3 className='font-bold text-sm text-gray-300'>Navgurukul Dharamshala 2k20</h3>
-                    <p className='text-xs font-mono font-thin text-gray-400'>20 Members</p>
+                    <h3 className='font-bold text-sm text-gray-300'>{activeRoom.name}</h3>
+                    <p className='text-xs font-mono font-thin text-gray-400'>{activeRoom.members || 1} Members</p>
                 </div>
-                <FontAwesomeIcon className='ml-auto font-thin text-lg text-gray-200 cursor-pointer' icon={faEllipsisVertical} />
+                <FontAwesomeIcon onClick={()=>setActiveRoom(null)} className='ml-auto font-thin text-xl text-gray-200 cursor-pointer' icon={faClose} />
             </div>
-            <div className='px-5 py-5 h-full overflow-y-scroll'>
-                {messages.map((message) => {
+            <div ref={messagesRef} className='px-5 py-5 h-full overflow-y-scroll'>
+                {messages.filter((message)=>message.room == activeRoom.id)?.map((message) => {
                     return (
-                        <div className={'flex py-2' + (message.user_id  != user_id ? ' justify-start flex-row-reverse' : "")}>
-                            <img src='https://i.pravatar.cc/300' className='w-8 rounded-full h-8' />
-                            <div className={'mx-2 max-w-[400px] bg-gray-800 px-3 py-1 rounded-lg' + (message.user.id  != user_id? ' rounded-tr-none' : " rounded-tl-none")}>
+                        <div className={'flex py-2' + (message.user.id == socket.id ? ' justify-start flex-row-reverse' : "")}>
+                            <img src='https://www.kindpng.com/picc/m/22-223910_circle-user-png-icon-transparent-png.png' className='w-8 rounded-full h-8' />
+                            <div className={'mx-2 max-w-[400px] bg-gray-800 px-3 py-1 rounded-lg' + (message.user.id == user_id ? ' rounded-tr-none' : " rounded-tl-none")}>
                                 <div className='flex justify-between'>
                                     <p className='text-green-500 text-xs font-bold'>{message.user.name}</p>
 
@@ -44,10 +70,10 @@ function Messages({ active = true, messages=[], handleMessage, user_id }) {
                 })}
             </div>
             <div className='bg-gray-800 flex py-2 items-center mt-auto'>
-                <FontAwesomeIcon className='text-gray-200 cursor-pointer hover:animate-spin text-xl mx-5' icon={faFaceSmile} />
-                <input autoFocus onKeyDown={handleMessage} placeholder='Type a message' className='w-[82%] font-bold h-8 outline-none px-3 bg-gray-700 rounded-lg text-white py-2' />
-                <FontAwesomeIcon className='text-gray-200 cursor-pointer hover:animate-spin text-xl mx-3' icon={faPaperclip} />
-                <FontAwesomeIcon className='text-gray-200 cursor-pointer hover:animate-spin text-xl mx-3' icon={faMicrophone} />
+                <FontAwesomeIcon className='text-gray-200 cursor-pointer hover:scale-150 text-xl mx-5' icon={faFaceSmile} />
+                <input autoFocus onKeyDown={handleMessage} placeholder='Type a message' className='w-[82%] font-mono h-8 outline-none px-3 bg-gray-700 rounded-lg text-white py-2' />
+                <FontAwesomeIcon className='text-gray-200 cursor-pointer hover:scale-150 text-xl mx-3' icon={faPaperclip} />
+                <FontAwesomeIcon className='text-gray-200 cursor-pointer hover:scale-150 text-xl mx-3' icon={faMicrophone} />
             </div>
         </div>
     )
