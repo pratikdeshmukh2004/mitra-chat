@@ -30,7 +30,7 @@ function Messages({ setActiveRoom,activeRoom, messages = [], user_id }) {
     }, [messages])
 
     if (!activeRoom) return (
-        <div className="flex flex-col items-center h-full w-[70%] bg-gray-900 border-r border-gray-700">
+        <div className="lg:flex hidden flex-col items-center h-full w-[70%] bg-gray-900 border-r border-gray-700">
             <div className='flex my-auto'>
                 <img className='w-16' src='/logo.png' />
                 <h2 className='font-mono font-bold text-3xl text-gray-200 ml-5 mt-3'>Mitra Chat</h2>

@@ -6,7 +6,7 @@ import { UserContext as userContext } from '../../contexs/authContext';
 function Sidebar({ rooms, setActiveRoom, activeRoom }) {
   const { user, setUser } = useContext(userContext)
   return (
-    <div className={(activeRoom?"lg:flex hidden":"flex")+" flex-col h-full w-[30%] bg-gray-900 border-r border-gray-700"} style={{ backgroundImage: `url('/images/background_1.jpg')` }}>
+    <div className={(activeRoom?"lg:flex hidden":"flex")+" flex-col h-full w-full lg:w-[30%] bg-gray-900 border-r border-gray-700"} style={{ backgroundImage: `url('/images/background_1.jpg')` }}>
       <div className=" h-full w-full bg-opacity-40 bg-gray-900" style={{ backdropFilter: 'blur(5px)' }}>
 
         <div className="flex items-center py-3 border-b border-gray-700 bg-gray-900 bg-opacity-80 px-5 text-white text-xl font-semibold">
