@@ -31,8 +31,7 @@ const clientService = {
         return response.data;
     },
     logout: async () => {
-        const response = await axiosInstance.post('/auth/logout');
-        return response.data;
+        reactLocalStorage.remove("token")
     },
     getCurrentUser: async () => {
         try {
