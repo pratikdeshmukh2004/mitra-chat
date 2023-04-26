@@ -36,3 +36,6 @@ select:-webkit-autofill:focus {
 ::-webkit-scrollbar-thumb:hover {
   background: white; 
 }
+.hs::-webkit-scrollbar {
+  display: none;
+}

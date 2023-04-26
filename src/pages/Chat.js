@@ -15,17 +15,19 @@ const HomePage = () => {
     const [messages, setMessages] = useState([])
     const [rooms, setRooms] = useState([{
         name: "Navgurukul Dharamshala",
-        lastMessage: "Hi Guys!\nHow are you?",
-        lastMessageTime: "01:32 PM",
-        pinned: true,
         id:1
     },
     {
         name: "Navgurukul Banglore",
-        lastMessage: "Hi Girls?",
-        lastMessageTime: "11:36 PM",
-        pinned: true,
         id:2
+    },
+    {
+        name: "Lobhi Wale",
+        id:3
+    },
+    {
+        name: "Leap Club",
+        id:4
     }
     ])
     const [activeRoom, setActiveRoom] = useState(null)
@@ -49,7 +51,7 @@ const HomePage = () => {
         <div className="h-screen bg-cover bg-center relative" style={{ backgroundImage: `url('/images/login_cover.jpg')` }}>
             <div className="absolute top-0 left-0 h-full w-full bg-gradient-to-bl lg:bg-gradient-to-bt from-transparent via-gray-900 to-gray-900" style={{ backdropFilter: 'blur(0px)' }}>
                 <div className='w-full flex lg:w-[80%] mx-auto lg:mt-[2%] mt-0 lg:h-[90%] h-full bg-gray-800'>
-                    <Sidebar setActiveRoom={setActiveRoom} activeRoom={activeRoom} rooms={rooms} />
+                    <Sidebar setActiveRoom={setActiveRoom} activeRoom={activeRoom} rooms={rooms} messages={messages} />
                     <Messages setActiveRoom={setActiveRoom} activeRoom={activeRoom} messages={messages} />
                 </div>
             </div>
